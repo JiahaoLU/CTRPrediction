@@ -1,7 +1,9 @@
 # Byte-compiled / optimized / DLL files
 .idea/
 __pycache__/
-.csv
+sampleSubmission.csv
+test.csv
+train.csv
 *.py[cod]
 *$py.class
 
