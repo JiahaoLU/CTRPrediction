@@ -1,7 +1,7 @@
 import torch
 from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader
-from Data_Preprocessor import get_dataset, get_field_dims
+from Data_Preprocessor import *
 from Deep_Model import FieldAwareFactorizationMachineModel
 from torchvision import datasets, transforms, models
 import torch.optim as optim
@@ -38,7 +38,8 @@ def run_test(model, data_loader, device):
 
 def main_model(dataset_path, epoch, learning_rate, batch_size, weight_decay):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    dataset = get_dataset(dataset_path)
+
+    dataset = DataPreprocessor(dataset_path)
     train_length = int(len(dataset) * 0.8)
     valid_length = int(len(dataset) * 0.1)
     test_length = len(dataset) - train_length - valid_length
@@ -47,7 +48,7 @@ def main_model(dataset_path, epoch, learning_rate, batch_size, weight_decay):
     train_data_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=8)
     valid_data_loader = DataLoader(valid_dataset, batch_size=batch_size, num_workers=8)
     test_data_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=8)
-    field_dims = get_field_dims(dataset)
+    field_dims = dataset.get_field_dims()
     model = FieldAwareFactorizationMachineModel(field_dims, embed_dim=4).to(device)
     criterion = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate, weight_decay=weight_decay)
