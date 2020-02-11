@@ -48,17 +48,25 @@ def get_feature_set(feature_array):
     return np.unique(feature_array)
 
 
-def one_hot_encoding(feature_instance, feature_set):
+def one_hot_encoding(feature_instances, feature_set):
         dimension = len(feature_set)
-        one_hot_vector = np.zeros((len(feature_instance),dimension))
-        for i in range(len(feature_instance)):
-            if feature_instance[i] not in feature_set:
+        one_hot_vector = np.zeros((len(feature_instances), dimension))
+        for i in range(len(feature_instances)):
+            if feature_instances[i] not in feature_set:
                 raise Exception("instance is not in the set")
 
-            index = np.argwhere(feature_set == feature_instance[i])
+            index = np.argwhere(feature_set == feature_instances[i])
             one_hot_vector[i, index] = 1
 
         return one_hot_vector
+
+
+def get_dataset(dataset_path):
+    return -1
+
+
+def get_field_dims(dataset):
+    return -1
 
 
 if __name__ == "__main__":
