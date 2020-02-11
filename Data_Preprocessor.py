@@ -14,7 +14,7 @@ class DataPreprocessor(Dataset):
         self.one_hot_data = self.get_one_hot_dataset()
 
     def __len__(self):
-        return len(self.data.index)
+        return np.size(self.one_hot_data, 0)
 
     def __getitem__(self, index):
         return self.one_hot_data[index], self.labels[index]
@@ -74,42 +74,46 @@ class DataPreprocessor(Dataset):
                 print("Iteration is stopped.")
 
         print('start concact')
-        data = pd.concat(chunks, ignore_index=True)
+        whole_data = pd.concat(chunks, ignore_index=True)
 
         print("data imported")
-        return data
-
-    def show_column_names(self):
-        print("column #: {0}\ncolumns: {1}".format(self.data.shape[1], self.data.columns.tolist()))
-        return self.data.shape[1], self.data.columns.tolist()
+        return whole_data
 
     def get_feature_set(self, feature_array):
         return np.array(np.unique(feature_array))
 
     def one_hot_encoding(self, feature_instances, feature_set):
-            dimension = len(feature_set)
-            one_hot_mat = np.zeros((len(feature_instances), dimension))
+            one_hot_vector = np.zeros((len(feature_instances), 1), dtype=int)
             for i in range(len(feature_instances)):
                 if feature_instances[i] not in feature_set:
                     raise Exception("instance is not in the set")
 
                 index = np.argwhere(feature_set == feature_instances[i])
-                one_hot_mat[i, index] = 1
+                one_hot_vector[i, 0] = int(index)
 
-            return one_hot_mat
+            return one_hot_vector
 
     def get_field_dims(self):
         dims = []
         for i in range(2, self.data.shape[1]):
-            dims.append(len(self.get_feature_set(self.data.iloc[:, i])))
+            dims.append(len(self.get_feature_set(self.one_hot_data[:, i-2])))
         return np.array(dims)
 
+    # def get_one_hot_dataset(self):
+    #     features = np.asarray(self.data.iloc[:, 2])
+    #     one_hot_array = self.one_hot_encoding(features, self.get_feature_set(features))
+    #     for i in range(3, self.data.shape[1]):
+    #         features = np.asarray(self.data.iloc[:, i])
+    #         next_array = self.one_hot_encoding(features, self.get_feature_set(features))
+    #         one_hot_array = np.hstack((one_hot_array, next_array))
+    #     return one_hot_array
+
     def get_one_hot_dataset(self):
-        one_hot_array = self.one_hot_encoding(np.asarray(self.data.iloc[:, 2]),
-                                              self.get_feature_set(np.asarray(self.data.iloc[:, 2])))
+        features = np.asarray(self.data.iloc[:, 2])
+        one_hot_array = self.one_hot_encoding(features, self.get_feature_set(features))
         for i in range(3, self.data.shape[1]):
-            next_array = self.one_hot_encoding(np.asarray(self.data.iloc[:, i]),
-                                               self.get_feature_set(np.asarray(self.data.iloc[:, i])))
+            features = np.asarray(self.data.iloc[:, i])
+            next_array = self.one_hot_encoding(features, self.get_feature_set(features))
             one_hot_array = np.hstack((one_hot_array, next_array))
         return one_hot_array
 
@@ -120,6 +124,7 @@ if __name__ == "__main__":
 
     processor = DataPreprocessor(f)
     loader = DataLoader(processor, batch_size=10, shuffle=True)
-    length = 0
+    print(len(processor))
+    print(processor.get_field_dims())
     for data, label in loader:
-        length += len(label)
+        print(data.size(), label)

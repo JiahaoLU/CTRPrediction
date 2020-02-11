@@ -8,7 +8,7 @@ import torch.optim as optim
 from sklearn.model_selection import train_test_split
 
 
-def run_train(model, optimizer, data_loader, criterion, device, log_interval=1000):
+def run_train(model, optimizer, data_loader, criterion, device, log_interval=100):
     model.train()
     total_loss = 0
     for i, (fields, target) in enumerate(data_loader):
@@ -36,7 +36,7 @@ def run_test(model, data_loader, device):
     return roc_auc_score(targets, predicts)
 
 
-def main_model(dataset_path, epoch, learning_rate, batch_size, weight_decay):
+def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     dataset = DataPreprocessor(dataset_path)
@@ -45,13 +45,15 @@ def main_model(dataset_path, epoch, learning_rate, batch_size, weight_decay):
     test_length = len(dataset) - train_length - valid_length
     train_dataset, valid_dataset, test_dataset = torch.utils.data.random_split(
         dataset, (train_length, valid_length, test_length))
-    train_data_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=8)
-    valid_data_loader = DataLoader(valid_dataset, batch_size=batch_size, num_workers=8)
-    test_data_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=8)
+    train_data_loader = DataLoader(train_dataset, batch_size=batch_size)
+    valid_data_loader = DataLoader(valid_dataset, batch_size=batch_size)
+    test_data_loader = DataLoader(test_dataset, batch_size=batch_size)
     field_dims = dataset.get_field_dims()
+
     model = FieldAwareFactorizationMachineModel(field_dims, embed_dim=4).to(device)
     criterion = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+
     for epoch_i in range(epoch):
         run_train(model, optimizer, train_data_loader, criterion, device)
         auc = run_test(model, valid_data_loader, device)
@@ -61,13 +63,18 @@ def main_model(dataset_path, epoch, learning_rate, batch_size, weight_decay):
     return model
 
 
-if __name__ == "__main__":
+def main(save_model=False):
     DATASET_PATH = "./Data/smaller_train.csv"
-    EPOCH = 3
+    EPOCH = 10
     LEARNING_RATE = 0.001
     BATCH_SIZE = 200
     WEIGHT_DECAY = 1e-6
-    trained_model = main_model(DATASET_PATH, EPOCH, LEARNING_RATE, BATCH_SIZE, WEIGHT_DECAY)
+    trained_model = main_process(DATASET_PATH, EPOCH, LEARNING_RATE, BATCH_SIZE, WEIGHT_DECAY)
 
-    model_name = "FFM"
-    torch.save(trained_model, f'{model_name}.pt')
+    if save_model:
+        model_name = "FFM"
+        torch.save(trained_model, f'{model_name}.pt')
+
+
+if __name__ == "__main__":
+    main()

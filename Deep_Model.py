@@ -39,6 +39,7 @@ class FeaturesLinear(nn.Module):
         """
         :param x: Long tensor of size ``(batch_size, num_fields)``
         """
+        x = x.to(torch.int64)
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
         return torch.sum(self.fc(x), dim=1) + self.bias
 
@@ -59,6 +60,7 @@ class FieldAwareFactorizationMachine(nn.Module):
         """
         :param x: Long tensor of size ``(batch_size, num_fields)``
         """
+        x = x.to(torch.int64)
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
         xs = [self.embeddings[i](x) for i in range(self.num_fields)]
         ix = list()
