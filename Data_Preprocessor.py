@@ -123,8 +123,9 @@ if __name__ == "__main__":
     f = "./Data/smaller_train.csv"
 
     processor = DataPreprocessor(f)
-    loader = DataLoader(processor, batch_size=10, shuffle=True)
-    print(len(processor))
-    print(processor.get_field_dims())
-    for data, label in loader:
-        print(data.size(), label)
+    print(processor.data.head())
+    # loader = DataLoader(processor, batch_size=10, shuffle=True)
+    # print(len(processor))
+    # print(processor.get_field_dims())
+    # for data, label in loader:
+    #     print(data.size(), label)

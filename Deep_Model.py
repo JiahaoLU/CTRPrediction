@@ -39,9 +39,9 @@ class FeaturesLinear(nn.Module):
         """
         :param x: Long tensor of size ``(batch_size, num_fields)``
         """
-        x = x.to(torch.int64)
-        x = x + x.new_tensor(self.offsets).unsqueeze(0)
-        return torch.sum(self.fc(x), dim=1) + self.bias
+        x = x.to(torch.int64)  # relative one hot position
+        x = x + x.new_tensor(self.offsets).unsqueeze(0)  # absolute one hot position
+        return torch.sum(self.fc(x), dim=1) + self.bias  # element wise linear poly sum
 
 
 class FieldAwareFactorizationMachine(nn.Module):
