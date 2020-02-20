@@ -8,7 +8,7 @@ import torch.optim as optim
 from sklearn.model_selection import train_test_split
 
 
-def run_train(model, optimizer, data_loader, criterion, device, log_interval=100):
+def run_train(model, optimizer, data_loader, criterion, device, log_interval=10):
     model.train()
     total_loss = 0
     for i, (fields, target) in enumerate(data_loader):
@@ -19,7 +19,7 @@ def run_train(model, optimizer, data_loader, criterion, device, log_interval=100
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
-        if (i + 1) % log_interval == 0:
+        if i % log_interval == 0:
             print('    - loss:', total_loss / log_interval)
             total_loss = 0
 
@@ -27,13 +27,16 @@ def run_train(model, optimizer, data_loader, criterion, device, log_interval=100
 def run_test(model, data_loader, device):
     model.eval()
     targets, predicts = list(), list()
+    correct = 0
     with torch.no_grad():
         for fields, target in data_loader:
             fields, target = fields.to(device), target.to(device)
             y = model(fields)
             targets.extend(target.tolist())
             predicts.extend(y.tolist())
-    return roc_auc_score(targets, predicts)
+            predict_click = torch.round(y.data)
+            correct += (predict_click == target).sum().item()
+    return roc_auc_score(targets, predicts), correct / len(targets) * 100
 
 
 def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay, embeddim):
@@ -56,20 +59,20 @@ def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay, e
 
     for epoch_i in range(epoch):
         run_train(model, optimizer, train_data_loader, criterion, device)
-        auc = run_test(model, valid_data_loader, device)
-        print('epoch:', epoch_i, 'validation: auc:', auc)
-    auc = run_test(model, test_data_loader, device)
-    print('test auc:', auc)
+        auc, acc = run_test(model, valid_data_loader, device)
+        print('epoch:', epoch_i, 'validation: auc:', auc, '--- acc:', acc)
+    auc, acc = run_test(model, test_data_loader, device)
+    print('test auc:', auc, 'test acc:', acc)
     return model
 
 
 def main(save_model=False):
-    DATASET_PATH = "./Data/smaller_train.csv"
+    DATASET_PATH = "./Data/train20k.csv"
     EPOCH = 10
     LEARNING_RATE = 0.001
     BATCH_SIZE = 200
     WEIGHT_DECAY = 1e-6
-    EMBED_DIM = 4
+    EMBED_DIM = 10
     trained_model = main_process(DATASET_PATH, EPOCH, LEARNING_RATE, BATCH_SIZE, WEIGHT_DECAY, EMBED_DIM)
 
     if save_model:
