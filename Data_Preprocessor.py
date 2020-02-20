@@ -33,18 +33,30 @@ class DataPreprocessor(Dataset):
         """
         called when iterate on Data Loader
         :param index: index of one sample
-        :return: one hot encoding of a sample, which consists of field-relative index of value 1
-                 corresponding label
+        :return: one hot encoding of a sample, which consists of field-relative index of value 1,
+                 and corresponding label
         """
         return self.one_hot_data[index], self.labels[index]
 
     def open_csv(self, iterator=False):
+        """
+        Open a csv file
+        :param iterator: Open a csv file as iterator/or not
+        :return: pandas data frame
+        """
         try:
             return pd.read_csv(self.path, sep=',', engine='python', iterator=iterator)
         except FileNotFoundError:
             print("file not found")
 
     def cut_smaller_data_for_exam(self, new_path, size=2000, skip_size=40000):
+        """
+        Cut a smaller data set for debugging code of size (smaller_data_size, num_fields + 2)
+        :param new_path: name and path for new csv file
+        :param size: the size of the smaller data set
+        :param skip_size: interval to skip to retrieve data uniformly from original set
+        :return: none
+        """
         print("Producing smaller data")
         print("Read file")
         data_file = self.open_csv(iterator=True)
@@ -74,6 +86,11 @@ class DataPreprocessor(Dataset):
         print("New smaller file created")
 
     def read_data_by_chunk(self, chunk_size=2000):
+        """
+        Read csv by chunk to avoid drive memory overflow
+        :param chunk_size: the size of data to read in every chunk
+        :return: csv registered in pandas data frame of size (data_size, num_fields + 2)
+        """
         print("Reading large data")
         data_file = self.open_csv(iterator=True)
 
@@ -99,26 +116,50 @@ class DataPreprocessor(Dataset):
         return whole_data
 
     def get_feature_set(self, feature_array):
+        """
+        Get array of feature set of one field.
+        :param feature_array: one column (one field) of the data frame
+        :return: an array of size (num_features)
+        """
         return np.array(np.unique(feature_array))
 
     def one_hot_encoding(self, feature_instances, feature_set):
-            one_hot_vector = np.zeros((len(feature_instances), 1), dtype=int)
-            for i in range(len(feature_instances)):
-                if feature_instances[i] not in feature_set:
-                    raise Exception("instance is not in the set")
+        """
+        One hot encoding for one column (one field) for every sample.
+        The one hot vector is represented by the index where the value is 1.
+        :param feature_instances: one column of data frame
+        :param feature_set: array of nonrecurring feature set
+        :return: one hot encoding of the whole column of size (data_size, 1)
+        """
+        one_hot_vector = np.zeros((len(feature_instances), 1), dtype=int)
+        for i in range(len(feature_instances)):
+            if feature_instances[i] not in feature_set:
+                raise Exception("instance is not in the set")
 
-                index = np.argwhere(feature_set == feature_instances[i])
-                one_hot_vector[i, 0] = int(index)
+            index = np.argwhere(feature_set == feature_instances[i])
+            one_hot_vector[i, 0] = int(index)
 
-            return one_hot_vector
+        return one_hot_vector
 
     def get_field_dims(self):
+        """
+        Get an array which contains the dimension of each field.
+        If sum up the array, the sum is the total dimension of all features.
+        (the total length of the one hot encoding vector)
+        The length of array is number of fields.
+        :return: an array of size (num_fields)
+        """
         dims = []
         for i in range(2, self.data.shape[1]):
             dims.append(len(self.get_feature_set(self.one_hot_data[:, i-2])))
         return np.array(dims)
 
     def get_one_hot_dataset(self):
+        """
+        Get one hot encoding for the whole data frame.
+        The one hot vector is represented by the index where the value is 1.
+        :return: an array of size (data_size, num_fields)
+        """
         features = np.asarray(self.data.iloc[:, 2])
         one_hot_array = self.one_hot_encoding(features, self.get_feature_set(features))
         for i in range(3, self.data.shape[1]):
