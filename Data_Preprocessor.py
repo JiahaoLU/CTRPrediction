@@ -8,6 +8,11 @@ from torch.utils.data import Dataset, DataLoader
 class DataPreprocessor(Dataset):
 
     def __init__(self, path=None):
+        """
+        Initialise the preprocessor as a Data set in torch
+        or initialise it as a data provider (cut smaller data, etc)
+        :param path: file path
+        """
         if path is not None:
             self.path = path
             self.data = self.read_data_by_chunk()
@@ -19,9 +24,18 @@ class DataPreprocessor(Dataset):
             print('Data provider is ready.')
 
     def __len__(self):
+        """
+        return number of data
+        """
         return np.size(self.one_hot_data, 0)
 
     def __getitem__(self, index):
+        """
+        called when iterate on Data Loader
+        :param index: index of one sample
+        :return: one hot encoding of a sample, which consists of field-relative index of value 1
+                 corresponding label
+        """
         return self.one_hot_data[index], self.labels[index]
 
     def open_csv(self, iterator=False):
@@ -115,16 +129,16 @@ class DataPreprocessor(Dataset):
 
 
 if __name__ == "__main__":
-    print('Start generating smaller data')
-    provider = DataPreprocessor()
-    provider.cut_smaller_data_for_exam('./Data/train20k.csv', size=20000, skip_size=40000)
-    # print("Start data cleaning")
-    # f = "./Data/train2k.csv"
-    #
-    # processor = DataPreprocessor(f)
-    # print(processor.data.head())
-    # loader = DataLoader(processor, batch_size=10, shuffle=True)
-    # print(len(processor))
+    # print('Start generating smaller data')
+    # provider = DataPreprocessor()
+    # provider.cut_smaller_data_for_exam('./Data/train20k.csv', size=20000, skip_size=40000)
+    print("Start data cleaning")
+    f = "./Data/train2k.csv"
+
+    processor = DataPreprocessor(f)
+    print(processor.data.head())
+    loader = DataLoader(processor, batch_size=10, shuffle=True)
+    print(len(processor))
     # print(processor.get_field_dims())
     # for data, label in loader:
     #     print(data.size(), label)

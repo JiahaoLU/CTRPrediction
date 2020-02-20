@@ -1,7 +1,5 @@
 import torch
-import torchvision
 import numpy as np
-import sys
 import torch.nn as nn
 
 
@@ -14,13 +12,18 @@ class FieldAwareFactorizationMachineModel(nn.Module):
     """
 
     def __init__(self, field_dims, embed_dim):
+        """
+        Initialisation of the FFM model
+        :param field_dims: list of dimensions of each field
+        :param embed_dim: dimension of latent vector
+        """
         super().__init__()
         self.linear = FeaturesLinear(field_dims)
         self.ffm = FieldAwareFactorizationMachine(field_dims, embed_dim)
 
     def forward(self, x):
         """
-        :param x: Long tensor of size ``(batch_size, num_fields)``
+        :param x: Integer tensor of size ``(batch_size, num_fields)``
         """
         ffm_term = torch.sum(torch.sum(self.ffm(x), dim=1), dim=1, keepdim=True)
         x = self.linear(x) + ffm_term
@@ -30,6 +33,12 @@ class FieldAwareFactorizationMachineModel(nn.Module):
 class FeaturesLinear(nn.Module):
 
     def __init__(self, field_dims, output_dim=1):
+        """
+        Initialisation of linear first-degree terms. Use nn.Embedding to realize
+        inner product of input one-hot encoding vector and weight vector
+        :param field_dims: list of dimensions of each field
+        :param output_dim: the sum of linear terms
+        """
         super().__init__()
         self.fc = nn.Embedding(sum(field_dims), output_dim)
         self.bias = nn.Parameter(torch.zeros((output_dim,)))
@@ -37,16 +46,22 @@ class FeaturesLinear(nn.Module):
 
     def forward(self, x):
         """
-        :param x: Long tensor of size ``(batch_size, num_fields)``
+        :param x: Integer tensor of size ``(batch_size, num_fields)``
         """
-        x = x.to(torch.int64)  # relative one hot position
-        x = x + x.new_tensor(self.offsets).unsqueeze(0)  # absolute one hot position
+        x = x.to(torch.int64)  # field-relative one hot encoding
+        x = x + x.new_tensor(self.offsets).unsqueeze(0)  # absolute-position one hot encoding
         return torch.sum(self.fc(x), dim=1) + self.bias  # element wise linear poly sum
 
 
 class FieldAwareFactorizationMachine(nn.Module):
 
     def __init__(self, field_dims, embed_dim):
+        """
+        Use latent vector product to replace simple scalar weight factor.
+        More adaptive to situations where dependency exists among fields.
+        :param field_dims: list of dimensions of each field
+        :param embed_dim: dimension of latent vector
+        """
         super().__init__()
         self.num_fields = len(field_dims)
         self.embeddings = nn.ModuleList([
@@ -58,14 +73,14 @@ class FieldAwareFactorizationMachine(nn.Module):
 
     def forward(self, x):
         """
-        :param x: Long tensor of size ``(batch_size, num_fields)``
+        :param x: Integer tensor of size ``(batch_size, num_fields)``
         """
         x = x.to(torch.int64)
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
-        xs = [self.embeddings[i](x) for i in range(self.num_fields)]
+        xs = [self.embeddings[i](x) for i in range(self.num_fields)]  # generation of latent mat
         ix = list()
         for i in range(self.num_fields - 1):
             for j in range(i + 1, self.num_fields):
-                ix.append(xs[j][:, i] * xs[i][:, j])
+                ix.append(xs[j][:, i] * xs[i][:, j])  # product of latent vector
         ix = torch.stack(ix, dim=1)
         return ix
