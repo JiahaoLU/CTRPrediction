@@ -85,7 +85,7 @@ class DataPreprocessor(Dataset):
         data_frame.to_csv(new_path, index=False)
         print("New smaller file created")
 
-    def read_data_by_chunk(self, chunk_size=2000):
+    def read_data_by_chunk(self, chunk_size=50000):
         """
         Read csv by chunk to avoid drive memory overflow
         :param chunk_size: the size of data to read in every chunk
