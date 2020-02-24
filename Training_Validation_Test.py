@@ -82,6 +82,10 @@ def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay, e
     val_auc_list = []
     val_acc_list = []
     val_loss_list = []
+    best_model = None
+    best_val_auc = 0
+    best_val_acc = 0
+    best_val_loss = 999999
     for epoch_i in range(epoch):
         train_loss = run_train(model, optimizer, train_data_loader, criterion, device)
         val_auc, val_acc,val_loss = run_test(model, valid_data_loader, device, criterion)
@@ -91,6 +95,11 @@ def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay, e
         val_acc_list.append(val_acc)
         val_loss_list.append(val_loss)
         print('epoch:', epoch_i, 'train loss:', train_loss, 'validation: auc:', val_auc, '--- acc:', val_acc,'--- loss:', val_loss)
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_model = model
+            best_val_auc = val_auc
+            best_val_acc = val_acc
         if boom:
             print('time up, break')
             break
@@ -98,7 +107,8 @@ def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay, e
             print(timer)
     test_auc, test_acc, test_loss = run_test(model, test_data_loader, device, criterion)
     print('test auc:', test_auc, 'test acc:', test_acc, 'test loss', test_loss)
-    return model,epoch_list,train_loss_list,val_auc_list,val_acc_list,val_loss_list,test_auc,test_acc,test_loss
+    return model,epoch_list,train_loss_list,val_auc_list,val_acc_list,val_loss_list,test_auc,test_acc,test_loss,\
+           best_model,best_val_auc,best_val_acc,best_val_loss
 
 
 def main(save_model=True):
@@ -108,12 +118,14 @@ def main(save_model=True):
     BATCH_SIZE = 3200
     WEIGHT_DECAY = 1e-6
     EMBED_DIM = 10
-    trained_model,epoch_list,train_loss_list,val_auc_list,val_acc_list,val_loss_list,auc,acc,loss = \
+    trained_model,epoch_list,train_loss_list,val_auc_list,val_acc_list,val_loss_list,auc,acc,loss,\
+    best_model,best_val_auc,best_val_acc,best_val_loss = \
         main_process(DATASET_PATH, EPOCH, LEARNING_RATE, BATCH_SIZE, WEIGHT_DECAY, EMBED_DIM)
-
-    if save_model:
-        model_name = "FFM"
-        torch.save(trained_model, f'{model_name}.pt')
+    print(trained_model,epoch_list,train_loss_list,val_auc_list,val_acc_list,val_loss_list,auc,acc,loss,\
+    best_model,best_val_auc,best_val_acc,best_val_loss)
+    # if save_model:
+    #     model_name = "FFM"
+    #     torch.save(trained_model, f'{model_name}.pt')
 
 
 
