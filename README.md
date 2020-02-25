@@ -11,11 +11,11 @@ Avazu Click-Through Rate Prediction
 * model in DeepModel.py
 * Training/eval/test in TrainingEvaluationTest.py
 
-![image](https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model.png)
+<div align=center><img width="160" height="90" src="https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model.png"/></div>
 FFM Model
 
-![image](https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_1.png)
+<div align=center><img width="160" height="90" src="https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_1.png"/></div>
 linear polynomial
 
-![image](https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_2.png)
+<div align=center><img width="160" height="90" src="https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_2.png"/></div>
 FFM
