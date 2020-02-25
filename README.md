@@ -10,3 +10,12 @@ Avazu Click-Through Rate Prediction
 * data cleaning in DataPreprocessor.py
 * model in DeepModel.py
 * Training/eval/test in TrainingEvaluationTest.py
+
+![image](https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model.png)
+FFM Model
+
+![image](https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_1.png)
+linear polynomial
+
+![image](https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_2.png)
+FFM
