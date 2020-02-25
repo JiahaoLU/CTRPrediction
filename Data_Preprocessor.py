@@ -182,7 +182,7 @@ if __name__ == "__main__":
     f = "./Data/train2k.csv"
 
     processor = DataPreprocessor(f)
-    print(processor.data.columns)
+    print(processor.get_field_dims())
     # loader = DataLoader(processor, batch_size=10, shuffle=True)
     # print(len(processor))
     # print(processor.get_field_dims())
