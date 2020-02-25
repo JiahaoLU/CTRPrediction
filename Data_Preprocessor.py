@@ -45,7 +45,10 @@ class DataPreprocessor(Dataset):
         :return: pandas data frame
         """
         try:
-            return pd.read_csv(self.path, sep=',', engine='python', iterator=iterator)
+            csv_file = pd.read_csv(self.path, sep=',', engine='python', iterator=iterator)
+            if csv_file is None:
+                print("file empty")
+            return csv_file
         except FileNotFoundError:
             print("file not found")
 
