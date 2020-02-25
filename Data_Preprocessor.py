@@ -160,9 +160,11 @@ class DataPreprocessor(Dataset):
         The one hot vector is represented by the index where the value is 1.
         :return: an array of size (data_size, num_fields)
         """
+        print('one hot encoding: feature {0}'.format(self.data.columns[2]))
         features = np.asarray(self.data.iloc[:, 2])
         one_hot_array = self.one_hot_encoding(features, self.get_feature_set(features))
         for i in range(3, self.data.shape[1]):
+            print('one hot encoding: feature {0}'.format(self.data.columns[i]))
             features = np.asarray(self.data.iloc[:, i])
             next_array = self.one_hot_encoding(features, self.get_feature_set(features))
             one_hot_array = np.hstack((one_hot_array, next_array))
@@ -177,9 +179,9 @@ if __name__ == "__main__":
     f = "./Data/train2k.csv"
 
     processor = DataPreprocessor(f)
-    print(processor.data.head())
-    loader = DataLoader(processor, batch_size=10, shuffle=True)
-    print(len(processor))
+    print(processor.data.columns)
+    # loader = DataLoader(processor, batch_size=10, shuffle=True)
+    # print(len(processor))
     # print(processor.get_field_dims())
     # for data, label in loader:
     #     print(data.size(), label)

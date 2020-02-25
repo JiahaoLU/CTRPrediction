@@ -49,11 +49,6 @@ def run_test(model, data_loader, device, criterion):
     :param device: CUDA GPU or CPU
     :return: auc score, accuracy of prediction
     """
-    if device.type == 'cuda':
-        print(torch.cuda.get_device_name(0))
-        print('Memory Usage:')
-        print('Allocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
-        print('Cached:   ', round(torch.cuda.memory_cached(0)/1024**3,1), 'GB')
     model.eval()
     targets, predicts = list(), list()
     correct = 0
@@ -87,8 +82,8 @@ def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay, e
     timer.start()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(torch.cuda.is_available())
-    print(torch.cuda.current_device())
+    if device.type == 'cuda':
+        print(torch.cuda.get_device_name(0))
 
     # Prepare the data
     dataset = DataPreprocessor(dataset_path)
@@ -111,9 +106,16 @@ def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay, e
     val_auc_list = []
     val_acc_list = []
     val_loss_list = []
+    best_model = None
+    best_val_auc = 0
+    best_val_acc = 0
+    best_val_loss = 999999
 
-    # Training
+    # train
     for epoch_i in range(epoch):
+        print('Memory Usage:')
+        print('Allocated:', round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1), 'GB')
+        print('Cached:   ', round(torch.cuda.memory_cached(0) / 1024 ** 3, 1), 'GB')
         train_loss = run_train(model, optimizer, train_data_loader, criterion, device)
         val_auc, val_acc,val_loss = run_test(model, valid_data_loader, device, criterion)
         epoch_list.append(epoch_i)
@@ -123,6 +125,11 @@ def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay, e
         val_loss_list.append(val_loss)
         print('epoch:', epoch_i, 'train loss:', train_loss, 'validation: auc:',\
               val_auc, '--- acc:', val_acc, '--- loss:', val_loss)
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_model = model
+            best_val_auc = val_auc
+            best_val_acc = val_acc
         if boom:
             print('time up, break')
             break
@@ -130,7 +137,8 @@ def main_process(dataset_path, epoch, learning_rate, batch_size, weight_decay, e
             print(timer)
     test_auc, test_acc, test_loss = run_test(model, test_data_loader, device, criterion)
     print('test auc:', test_auc, 'test acc:', test_acc, 'test loss', test_loss)
-    return model, epoch_list, train_loss_list, val_auc_list, val_acc_list, val_loss_list, test_auc, test_acc, test_loss
+    return model, epoch_list, train_loss_list, val_auc_list, val_acc_list, val_loss_list, \
+           test_auc, test_acc, test_loss, best_model, best_val_auc, best_val_acc, best_val_loss
 
 
 def main(save_model=True):
@@ -140,12 +148,14 @@ def main(save_model=True):
     BATCH_SIZE = 3200
     WEIGHT_DECAY = 1e-6
     EMBED_DIM = 10
-    trained_model, epoch_list, train_loss_list, val_auc_list, val_acc_list, val_loss_list, auc, acc, loss = \
+    trained_model,epoch_list,train_loss_list,val_auc_list,val_acc_list,val_loss_list,auc,acc,loss,\
+    best_model,best_val_auc,best_val_acc,best_val_loss = \
         main_process(DATASET_PATH, EPOCH, LEARNING_RATE, BATCH_SIZE, WEIGHT_DECAY, EMBED_DIM)
-
-    if save_model:
-        model_name = "FFM"
-        torch.save(trained_model, f'{model_name}.pt')
+    print(trained_model,epoch_list,train_loss_list,val_auc_list,val_acc_list,val_loss_list,auc,acc,loss,\
+    best_model,best_val_auc,best_val_acc,best_val_loss)
+    # if save_model:
+    #     model_name = "FFM"
+    #     torch.save(trained_model, f'{model_name}.pt')
 
 
 if __name__ == "__main__":
