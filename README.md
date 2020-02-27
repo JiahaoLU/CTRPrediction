@@ -10,12 +10,15 @@ Avazu Click-Through Rate Prediction
 * data cleaning in DataPreprocessor.py
 * model in DeepModel.py
 * Training/eval/test in TrainingEvaluationTest.py
+* Hyperparameter optimizer in HyperParameterFind.py
+* Result Plotting in Visualisation.py
 
-<div align=center><img width="320" height="180" src="https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model.png"/></div>
+<div><img width=320 src="https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model.png"/></div>
 FFM Model
 
-<div align=center><img width="320" height="180" src="https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_1.png"/></div>
+<div><img width=320 src="https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_1.png"/></div>
 linear polynomial
 
-<div align=center><img width="320" height="180" src="https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_2.png"/></div>
+<div><img width=320 src="https://github.com/JiahaoLU/CTRPrediction/blob/Jiahao/Resource/model_part_2.png"/></div>
 FFM
+>>>>>>> d6c5225c5a1ae793d13979ed6ae00efa565ed835
